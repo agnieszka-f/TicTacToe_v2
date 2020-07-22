@@ -7,6 +7,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -27,6 +28,10 @@ public class TicTacToe extends Application {
     private Button [][] buttons;
     private GridPane gridPane;
     private Label labelInfo;
+    private Label firstMove;
+    private Button buttonFirstHuman;
+    private Button buttonFirstComputer;
+    private BorderPane borderPane;
     private Board board;
     private int countOfMove;
 
@@ -36,12 +41,12 @@ public class TicTacToe extends Application {
         board.initBoard();
         countOfMove = board.getSize() * board.getSize();
 
-        Scene scene = new Scene(initVBox(), 300,320);
+        Scene scene = new Scene(initVBox(), 300,360);
         primaryStage.setScene(scene);
         primaryStage.setTitle("Kółko i krzyżyk");
         primaryStage.show();
         initEventMenuItem();
-        buttonsAction();
+        firstMoveSlection();
     }
     public static void main(String[] args){
         launch(args);
@@ -104,6 +109,13 @@ public class TicTacToe extends Application {
             }
         }
     }
+    private void availableBoardButtons(){
+        for(int i =0; i<buttons.length; i++) {
+            for (int j = 0; j < buttons[i].length; j++) {
+                buttons[i][j].setDisable(false);
+            }
+        }
+    }
     private void highlightWinningLine(){
         List temp = board.getWinnerList();
         if(temp.isEmpty()){
@@ -154,30 +166,74 @@ public class TicTacToe extends Application {
                 buttons[i][j].setPrefHeight(100);
                 buttons[i][j].setFont(Font.font("Arial", FontWeight.BOLD, 40));
                 buttons[i][j].setTextFill(Color.BLACK);
+                buttons[i][j].setDisable(true);
                 gridPane.addRow(i, buttons[i][j]);
             }
         }
     }
     private VBox initVBox(){
         vBox = new VBox();
-        vBox.getChildren().addAll(initMenuBar(),initGridPane(),initLabelInfo());
+        vBox.getChildren().addAll(initMenuBar(),initBorderPane(),initGridPane(),initLabelInfo());
 
         return vBox;
     }
     private void initEventMenuItem(){
         newGameMenuItem.addEventHandler(ActionEvent.ACTION,  event -> {
-                labelInfo.setText("Twój ruch");
+                labelInfo.setText("");
                 board = new Board();
                 board.initBoard();
                 countOfMove = board.getSize() * board.getSize();
                 buttonsClean();
-                buttonsAction();
+                disableBoardButtons();
+                setAvailableButtonsFirstMove();
+                firstMoveSlection();
             });
 
         closeMenuItem.addEventHandler(ActionEvent.ACTION,  event -> Platform.exit());
     }
     private Label initLabelInfo(){
-        labelInfo = new Label("Twój ruch");
+        labelInfo = new Label("");
         return labelInfo;
+    }
+    private void firstMoveSlection(){
+
+        buttonFirstHuman.setOnAction(event -> {
+            availableBoardButtons();
+            buttonsAction();
+            labelInfo.setText("Twój ruch");
+            setDisableButtonsFirstMove(Board.HUMAN);
+        });
+        buttonFirstComputer.setOnAction(event -> {
+            board.setActivePlayer(board.COMPUTER);
+            labelInfo.setText("Ruch komputera");
+            availableBoardButtons();
+            computerAction();
+            buttonsAction();
+            setDisableButtonsFirstMove(Board.COMPUTER);
+        });
+    }
+    private BorderPane initBorderPane(){
+        borderPane = new BorderPane();
+        borderPane.setPadding(new Insets(15, 20, 10, 10));
+        buttonFirstHuman = new Button("Ja");
+        buttonFirstComputer = new Button("Komputer");
+        firstMove = new Label("Kto ma pierwszy ruch?");
+        borderPane.setLeft(firstMove);
+        borderPane.setCenter(buttonFirstHuman);
+        borderPane.setRight(buttonFirstComputer);
+        return borderPane;
+    }
+    private void setAvailableButtonsFirstMove(){
+        buttonFirstHuman.setDisable(false);
+        buttonFirstComputer.setDisable(false);
+        buttonFirstComputer.setTextFill(Color.BLACK);
+        buttonFirstHuman.setTextFill(Color.BLACK);
+    }
+    private void setDisableButtonsFirstMove(int player){
+        buttonFirstHuman.setDisable(true);
+        buttonFirstComputer.setDisable(true);
+        if(player == Board.HUMAN){
+            buttonFirstHuman.setTextFill(Color.RED);
+        } else { buttonFirstComputer.setTextFill(Color.RED); }
     }
 }

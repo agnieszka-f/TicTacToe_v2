@@ -24,6 +24,7 @@ public class Board {
     }
     public int getActivePlayer(){ return activePlayer; }
     public void switchActivePlayer() { activePlayer = -activePlayer; }
+    public void setActivePlayer(int activePlayer){ this.activePlayer = activePlayer;}
     public int getSize() { return size; }
     public boolean checkMove(int row, int column){
         if(board[row][column] == EMPTYFIELD) return true;
