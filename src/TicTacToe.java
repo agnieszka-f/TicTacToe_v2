@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.util.*;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -23,6 +24,8 @@ public class TicTacToe extends Application {
     private Menu menu1;
     private Menu menu2;
     private MenuItem newGameMenuItem;
+    private MenuItem saveGameMenuItem;
+    private MenuItem restoreGameMenuItem;
     private MenuItem closeMenuItem;
     private MenuItem aboutMenuItem;
     private Button [][] buttons;
@@ -120,11 +123,13 @@ public class TicTacToe extends Application {
         List temp = board.getWinnerList();
         if(temp.isEmpty()){
             labelInfo.setText("Remis!!!");
+            //board.putRankingMap(board.getActivePlayer(),false);
+            //board.saveRanking();
         } else {
             for(int i=0; i<temp.size(); i++){
                 Coordy t = (Coordy) temp.get(i);
                 buttons[t.getX()][t.getY()].setTextFill(Color.GREEN);
-            }
+             }
             labelInfo.setText("Wygrana!!!");
         }
     }
@@ -133,8 +138,10 @@ public class TicTacToe extends Application {
         menu1 = new Menu("Edycja");
         menu2 = new Menu("Pomoc");
         newGameMenuItem = new MenuItem("Nowa gra");
+        saveGameMenuItem = new MenuItem("Zapisz stan gry");
+        restoreGameMenuItem = new MenuItem("Przywróć stan gry");
         closeMenuItem = new MenuItem("Zamknij");
-        menu1.getItems().addAll(newGameMenuItem,closeMenuItem);
+        menu1.getItems().addAll(newGameMenuItem,saveGameMenuItem,restoreGameMenuItem,closeMenuItem);
         aboutMenuItem = new MenuItem("O grze");
         menu2.getItems().addAll(aboutMenuItem);
         menuBar.getMenus().addAll(menu1,menu2);
@@ -178,18 +185,30 @@ public class TicTacToe extends Application {
         return vBox;
     }
     private void initEventMenuItem(){
-        newGameMenuItem.addEventHandler(ActionEvent.ACTION,  event -> {
-                labelInfo.setText("");
-                board = new Board();
-                board.initBoard();
-                countOfMove = board.getSize() * board.getSize();
-                buttonsClean();
-                disableBoardButtons();
-                setAvailableButtonsFirstMove();
-                firstMoveSlection();
-            });
+        newGameMenuItem.addEventHandler(ActionEvent.ACTION,  event -> newGame());
 
         closeMenuItem.addEventHandler(ActionEvent.ACTION,  event -> Platform.exit());
+
+        saveGameMenuItem.addEventHandler(ActionEvent.ACTION,  event -> {
+            try {
+                board.saveGame();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Platform.exit();
+        });
+        restoreGameMenuItem.addEventHandler(ActionEvent.ACTION, event -> restoresThePreviousGameState());
+
+    }
+    private void newGame(){
+        labelInfo.setText("");
+        board = new Board();
+        board.initBoard();
+        countOfMove = board.getSize() * board.getSize();
+        buttonsClean();
+        disableBoardButtons();
+        setAvailableButtonsFirstMove();
+        firstMoveSlection();
     }
     private Label initLabelInfo(){
         labelInfo = new Label("");
@@ -234,6 +253,50 @@ public class TicTacToe extends Application {
         buttonFirstComputer.setDisable(true);
         if(player == Board.HUMAN){
             buttonFirstHuman.setTextFill(Color.RED);
-        } else { buttonFirstComputer.setTextFill(Color.RED); }
+        } else if(player == Board.COMPUTER) { buttonFirstComputer.setTextFill(Color.RED); }
+    }
+    private void restoresThePreviousGameState(){
+        newGame();
+        int temp[][] = null;
+        try{
+            temp = board.restoreGame();
+        }
+        catch(IOException e){
+            e.printStackTrace();
+        }
+        if(temp!= null) {
+            restoreButtons(temp);
+            restoreReflectWinningStateBoard();
+        } else{
+            labelInfo.setText("Stan gry nie może zostać odtworzony");
+            disableBoardButtons();
+            setDisableButtonsFirstMove(100);
+        }
+    }
+    private void restoreButtons(int temp[][]){
+        for (int i = 0; i < buttons.length; i++) {
+            for (int j = 0; j < buttons[i].length; j++) {
+                if (temp[i][j] == board.HUMAN) {
+                    buttons[i][j].setText("X");
+                    buttons[i][j].setDisable(true);
+                    countOfMove--;
+                } else if (temp[i][j] == board.COMPUTER) {
+                    buttons[i][j].setText("O");
+                    buttons[i][j].setDisable(true);
+                    countOfMove--;
+                } else buttons[i][j].setDisable(false);
+            }
+        }
+        if (countOfMove % 2 == 0) {
+            setDisableButtonsFirstMove(board.COMPUTER);
+        } else setDisableButtonsFirstMove(board.HUMAN);
+    }
+    private void restoreReflectWinningStateBoard(){
+        if(board.checkWin(board.HUMAN) == true || board.checkWin(board.COMPUTER) == true){
+            reflectWinningStateOnBoard();
+        } else if(countOfMove != 0){
+            labelInfo.setText("Twój ruch");
+            buttonsAction();
+        } else reflectWinningStateOnBoard();
     }
 }

@@ -1,3 +1,6 @@
+import javax.xml.crypto.Data;
+import java.io.DataOutputStream;
+import java.io.*;
 import java.util.*;
 
 public class Board {
@@ -141,5 +144,43 @@ public class Board {
         }
         coordy = computerRandomMove();
         return coordy;
+    }
+    public void saveGame() throws IOException {
+        String filePath = "data.txt";
+        DataOutputStream outputStream = null;
+
+        try{
+            outputStream = new DataOutputStream(new FileOutputStream(filePath));
+            for(int x =0; x<3; x++){
+                for(int y=0; y<3; y++){
+                    outputStream.writeInt(board[x][y]);
+                }
+            }
+        }
+        finally{
+            if(outputStream!=null){
+                outputStream.close();
+            }
+        }
+    }
+    public int[][] restoreGame() throws IOException{
+        String filePath = "data.txt";
+
+        DataInputStream inputStream = null;
+        try{
+            inputStream = new DataInputStream(new FileInputStream(filePath));
+            for(int x = 0; x < size; x++){
+                for(int y = 0; y < size; y++){
+                    board[x][y] = inputStream.readInt();
+                }
+            }
+        }
+        finally{
+            if(inputStream!=null){
+                inputStream.close();
+                return board;
+            }
+        }
+        return board;
     }
 }
