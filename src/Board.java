@@ -11,6 +11,9 @@ public class Board {
     public static final int HUMAN = 1;
     public static final int COMPUTER = -1;
     public static final int EMPTYFIELD = 0;
+    private int countOfGame = 0;
+    private int countOfHumanWin = 0;
+    private int countOfComputerWin = 0;
 
     public Board(){
         board = new int[size][size];
@@ -182,5 +185,40 @@ public class Board {
             }
         }
         return board;
+    }
+    public void saveRanking(boolean win){
+        String filePath = "ranking.txt";
+        DataOutputStream outputStream = null;
+        countOfGame++;
+        if(win) {
+            if (getActivePlayer() == HUMAN) countOfHumanWin++;
+            else countOfComputerWin++;
+        }
+        try{
+            outputStream = new DataOutputStream(new FileOutputStream(filePath));
+            outputStream.writeInt(countOfGame);
+            outputStream.writeInt(countOfHumanWin);
+            outputStream.writeInt(countOfComputerWin);
+            outputStream.close();
+        } catch(IOException e){
+            e.printStackTrace();
+        }
+
+    }
+    public void loadRanking(){
+        String filePath = "ranking.txt";
+        DataInputStream inputStream = null;
+        try{
+            inputStream  = new DataInputStream(new FileInputStream(filePath));
+            countOfGame = inputStream.readInt();
+            countOfHumanWin = inputStream.readInt();
+            countOfComputerWin = inputStream.readInt();
+            inputStream.close();
+        } catch(IOException e){
+            e.printStackTrace();
+            countOfGame = 0;
+            countOfHumanWin = 0;
+            countOfComputerWin = 0;
+        }
     }
 }

@@ -42,6 +42,7 @@ public class TicTacToe extends Application {
     public void start(Stage primaryStage) throws Exception {
         board = new Board();
         board.initBoard();
+        board.loadRanking();
         countOfMove = board.getSize() * board.getSize();
 
         Scene scene = new Scene(initVBox(), 300,360);
@@ -123,14 +124,14 @@ public class TicTacToe extends Application {
         List temp = board.getWinnerList();
         if(temp.isEmpty()){
             labelInfo.setText("Remis!!!");
-            //board.putRankingMap(board.getActivePlayer(),false);
-            //board.saveRanking();
+            board.saveRanking(false);
         } else {
             for(int i=0; i<temp.size(); i++){
                 Coordy t = (Coordy) temp.get(i);
                 buttons[t.getX()][t.getY()].setTextFill(Color.GREEN);
              }
             labelInfo.setText("Wygrana!!!");
+            board.saveRanking(true);
         }
     }
     private MenuBar initMenuBar(){
@@ -204,6 +205,7 @@ public class TicTacToe extends Application {
         labelInfo.setText("");
         board = new Board();
         board.initBoard();
+        board.loadRanking();
         countOfMove = board.getSize() * board.getSize();
         buttonsClean();
         disableBoardButtons();
